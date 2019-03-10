@@ -1,9 +1,10 @@
 import functools as ft
 import json
+from collections import namedtuple
 from operator import add
 from pathlib import Path
-from collections import namedtuple
 
+import numpy as np
 import pandas as pd
 import pytest
 from pycocotools.coco import COCO
@@ -31,10 +32,10 @@ def load_json_detection_data(datadir):
             {'image_id': row['image_id'], 'category_id': row['category_id'],
              **parse_bbox(row['bbox'])}
             for row in annotations]
-        groundtruth = pd.DataFrame.from_records(groundtruth) \
-            .sort_values('image_id') \
-            .iloc[0:100]
-        groundtruth = groundtruth.to_dict('records')
+        groundtruth = pd.DataFrame.from_records(groundtruth)
+        image_ids = np.sort(np.unique(groundtruth['image_id'].values))[0:100]
+        groundtruth = groundtruth.loc[groundtruth['image_id'].isin(image_ids)] \
+            .to_dict('records')
 
 
     with open(datadir / 'instances_val2014_fakebbox100_results.json') as buf:
