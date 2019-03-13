@@ -1,7 +1,8 @@
-import pytest
 from pathlib import Path
-from debobo.detection import map_score_evaluator
+
 import numpy as np
+import pytest
+from debobo.detection import map_score_evaluator
 
 
 @pytest.mark.parametrize('idx, iou_thresh, max_detections', pytest.coco_params)

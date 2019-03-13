@@ -2,6 +2,9 @@ import numpy as np
 from sklearn.metrics import auc
 
 
+__all__ = ['average_precision_score']
+
+
 def _interpolate_precision(precision):
     """
     precision ordered such that corresponding recall is in descending order

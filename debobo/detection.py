@@ -2,7 +2,6 @@ import functools as ft
 from collections import defaultdict
 
 import numpy as np
-import sklearn.metrics as sk_metrics
 
 from .utils import bounding_box_iou
 from .retrieval import average_precision_score
