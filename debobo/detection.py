@@ -7,7 +7,7 @@ from .utils import bounding_box_iou
 from .retrieval import average_precision_score
 
 
-__all__ = ['map_score_evaluator']
+__all__ = ['map_score_evaluator', 'match_detections', 'merge_rank_arrays']
 
 
 BBOX_DTYPE = [('x1', np.float_), ('y1', np.float_), ('x2', np.float_),
@@ -62,7 +62,7 @@ def match_detections(gt, dt, iou_thresh=0.5):
 
 RANK_ARRAY_DTYPE = [('gt', np.bool), ('dt', np.float_)]
 
-def _merge_rank_arrays(rank_arrays):
+def merge_rank_arrays(rank_arrays):
     result = defaultdict(list)
 
     for arrays in rank_arrays:
@@ -79,7 +79,7 @@ def map_score_evaluator(groundtruths, detections, iou_thresh=0.5,
     rank_arrays = (
         match_detections(gt, dt[:max_detections], iou_thresh=iou_thresh)
         for gt, dt in zip(groundtruths, detections))
-    rank_arrays = _merge_rank_arrays(rank_arrays)
+    rank_arrays = merge_rank_arrays(rank_arrays)
 
     if weighted:
         rank_arrays = np.concatenate(list(rank_arrays.values()))
