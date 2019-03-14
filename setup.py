@@ -30,4 +30,4 @@ setuptools.setup(
         'Operating System :: OS Independent',
     ],
     install_requires=['numpy>=1.12'],
-    tests_require=['pytest', 'pycocotools'])
+    tests_require=['pytest', 'pycocotools', 'ignite'])
