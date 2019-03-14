@@ -23,10 +23,10 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/dseuss/debobo.git',
-    packages=setuptools.find_packages(where='.', exclude='tests'),
+    packages=setuptools.find_packages(exclude=['tests']),
     classifiers=[
         'Programming Language :: Python :: 3',
-        'OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)'
+        'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
         'Operating System :: OS Independent',
     ],
     install_requires=['numpy>=1.12'],
