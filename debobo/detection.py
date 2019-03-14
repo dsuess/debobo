@@ -55,7 +55,7 @@ def match_detections(gt, dt, *, iou_thresh=0.5):
     return result
 
 
-RANK_ARRAY_DTYPE = [('gt', np.bool), ('dt', np.float_)]
+RANK_ARRAY_DTYPE = [('gt', np.uint8), ('dt', np.float_)]
 
 def merge_rank_arrays(rank_arrays):
     result = defaultdict(list)
