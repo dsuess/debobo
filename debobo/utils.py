@@ -1,3 +1,6 @@
+import itertools as it
+import functools as ft
+
 import numpy as np
 
 
@@ -27,3 +30,24 @@ def bounding_box_iou(bboxes1, bboxes2):
     area_2 = (x2r - x2l + 1) * (y2b - y2t + 1)
     area_u = (area_1[:, None] + area_2[None, :]) - area_i
     return relu_(area_i / area_u)
+
+
+def iterbatch(iterable, batch_size=None):
+    if batch_size is None:
+        yield [iterable]
+    else:
+        iterator = iter(iterable)
+        try:
+            while True:
+                first_elem = next(iterator)
+                yield it.chain((first_elem,),
+                               it.islice(iterator, batch_size - 1))
+        except StopIteration:
+            pass
+
+
+def cast_recarray(array, dtype):
+    if isinstance(array, np.recarray):
+        return array.astype(dtype)
+    else:
+        return np.rec.fromarrays(array.T, dtype=dtype).reshape(len(array))

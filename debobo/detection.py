@@ -3,7 +3,7 @@ from collections import defaultdict
 
 import numpy as np
 
-from .utils import bounding_box_iou
+from .utils import bounding_box_iou, cast_recarray
 from .retrieval import interpolated_average_precision_score
 
 
@@ -15,7 +15,7 @@ BBOX_DTYPE = [('x1', np.float_), ('y1', np.float_), ('x2', np.float_),
 
 
 def _match_single_class(gt, dt, iou_thresh=0.5):
-    gt = np.asarray(gt, dtype=BBOX_DTYPE)
+    gt = np.array(gt, dtype=BBOX_DTYPE)
     dt = np.asarray(dt, dtype=BBOX_DTYPE + [('score', np.float_)])
 
     if len(gt) == 0:
@@ -42,14 +42,9 @@ def _match_single_class(gt, dt, iou_thresh=0.5):
     return result
 
 
-DTYPE_GTS = [('x1', np.float_), ('y1', np.float_), ('x2', np.float_),
-             ('y2', np.float_), ('class', np.int_)]
-DTYPE_DTS = DTYPE_GTS + [('score', np.float_)]
-
-
 def match_detections(gt, dt, *, iou_thresh=0.5):
-    gt = np.asarray(gt, dtype=BBOX_DTYPE + [('class', np.int_)])
-    dt = np.asarray(dt, dtype=BBOX_DTYPE + [('class', np.int_), ('score', np.float_)])
+    gt = cast_recarray(gt, dtype=BBOX_DTYPE + [('class', np.int_)])
+    dt = cast_recarray(dt, dtype=BBOX_DTYPE + [('class', np.int_), ('score', np.float_)])
 
     result = dict()
     for c in set(gt['class']).union(dt['class']):
