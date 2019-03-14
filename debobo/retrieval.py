@@ -1,5 +1,4 @@
 import numpy as np
-from sklearn.metrics import auc
 
 
 __all__ = ['average_precision_score', 'interpolated_average_precision_score']
