@@ -4,7 +4,7 @@ from collections import defaultdict
 import numpy as np
 
 from .utils import bounding_box_iou
-from .retrieval import average_precision_score
+from .retrieval import interpolated_average_precision_score
 
 
 __all__ = ['map_score_evaluator', 'match_detections', 'merge_rank_arrays']
@@ -47,7 +47,7 @@ DTYPE_GTS = [('x1', np.float_), ('y1', np.float_), ('x2', np.float_),
 DTYPE_DTS = DTYPE_GTS + [('score', np.float_)]
 
 
-def match_detections(gt, dt, iou_thresh=0.5):
+def match_detections(gt, dt, *, iou_thresh=0.5):
     gt = np.asarray(gt, dtype=BBOX_DTYPE + [('class', np.int_)])
     dt = np.asarray(dt, dtype=BBOX_DTYPE + [('class', np.int_), ('score', np.float_)])
 
@@ -73,9 +73,9 @@ def merge_rank_arrays(rank_arrays):
             for key, val in result.items() if len(val) > 0}
 
 
-def map_score_evaluator(groundtruths, detections, iou_thresh=0.5,
+def map_score_evaluator(groundtruths, detections, *, iou_thresh=0.5,
                         max_detections=None, weighted=False,
-                        ap_fun=average_precision_score):
+                        ap_fun=interpolated_average_precision_score):
     rank_arrays = (
         match_detections(gt, dt[:max_detections], iou_thresh=iou_thresh)
         for gt, dt in zip(groundtruths, detections))
