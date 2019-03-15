@@ -8,8 +8,7 @@ def _interpolate_precision(precision):
     """
     precision ordered such that corresponding recall is in descending order
     """
-    precision = [np.max(precision[:i + 1]) for i in range(len(precision))]
-    return np.array(precision)
+    return np.maximum.accumulate(precision)
 
 
 def precision_recall_curve(y_true, y_score):
