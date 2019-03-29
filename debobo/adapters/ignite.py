@@ -20,8 +20,8 @@ class APScores(Metric):
 
     def update(self, output):
         for dt, gt in zip(*output):
-            gt = gt.detach().numpy()
-            dt = dt.detach().numpy()
+            gt = gt.to('cpu').detach().numpy()
+            dt = dt.to('cpu').detach().numpy()
             rank_arrays = match_detections(gt, dt[:self.max_detections],
                                            iou_thresh=self.iou_thresh)
             self.rank_arrays.append(rank_arrays)
