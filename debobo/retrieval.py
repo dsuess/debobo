@@ -1,7 +1,10 @@
+# pylint: disable=bad-continuation,no-else-return
+#
 import numpy as np
 
 
-__all__ = ['average_precision_score', 'interpolated_average_precision_score']
+__all__ = ['average_precision_score', 'interpolated_average_precision_score',
+           'mean_average_precision_score']
 
 
 def _interpolate_precision(precision):
@@ -47,3 +50,14 @@ def average_precision_score(y_true, y_score):
 
 def interpolated_average_precision_score(y_true, y_score):
     return _average_precision_score(y_true, y_score, interpolate=True)
+
+
+def mean_average_precision_score(rank_arrays, *, weighted=False,
+                                 ap_fun=interpolated_average_precision_score):
+    if weighted:
+        rank_arrays = np.concatenate(list(rank_arrays.values()))
+        return ap_fun(rank_arrays['gt'], rank_arrays['dt'])
+    else:
+        ap_scores = np.array(
+            [ap_fun(y['gt'], y['dt']) for y in rank_arrays.values()])
+        return np.mean(ap_scores[~np.isnan(ap_scores)])
