@@ -121,7 +121,9 @@ def merge_rank_arrays(
         rank_arrays (Iterable[Dict[Hashable, _ClassificationEvaluation]]):
             multi-class classification evaluation results to be merged
 
-    Returns (Dict[Hashable, _ClassificationEvaluation]): Merged results
+    Returns (Dict[Hashable, np.recarray): Merged results; for each class,
+        we return a recarray with columns `gt` and `dt`
+
     """
     result: DefaultDict[Hashable, _ClassificationEvaluation] = defaultdict(list)
 
@@ -138,7 +140,7 @@ def evaluate_frames(
     detections: Iterable[np.ndarray], *,
     iou_thresh: float = 0.5,
     max_detections: Optional[int] = None) \
-    -> Dict[Hashable, _ClassificationEvaluation]:
+    -> Dict[Hashable, np.recarray]:
     """Performs evaluation on a stream of detections and groundtruths.
 
     See `merge_rank_arrays` for the conventions used.
