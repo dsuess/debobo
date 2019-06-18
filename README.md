@@ -40,3 +40,7 @@ We provide ready-to-use metrics for ignite in `debobo.adapters.ignite`.
 Feel free to request other adapters as an issue.
 Also, check the [tests](tests/test_detection.py) for how to use the low-level routines.
 
+
+## Thanks
+
+Thanks to [@martiningram](https://github.com/martiningram/) for the header image.
