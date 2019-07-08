@@ -15,6 +15,10 @@ def safe_to_torch(x):
 @pytest.mark.parametrize('batch_size', [1, 4, 32])
 def test_map_score_evaluator(idx, iou_thresh, max_detections, detection_data,
                              coco_results, batch_size):
+    # FIXME Dont skip this test for named classes
+    if not np.issubdtype(detection_data.gt['class'].dtype, np.number):
+        pytest.skip('Skipping testing ignite adapter for non-numeric data')
+
     image_ids = list(set(detection_data.dt['image_id']).union(detection_data.gt['image_id']))
     groundtruths = (
         detection_data.gt.loc[detection_data.gt['image_id'] == image_id,

@@ -2,6 +2,7 @@ import itertools as it
 import functools as ft
 
 import numpy as np
+from collections import defaultdict
 
 
 def relu_(x):
@@ -50,4 +51,27 @@ def cast_recarray(array, dtype):
     if isinstance(array, np.recarray):
         return array.astype(dtype)
     else:
+        array = np.asarray(array).reshape((-1, len(dtype)))
         return np.rec.fromarrays(array.T, dtype=dtype).reshape(len(array))
+
+
+class UniqueLabeler(defaultdict):
+    def __init__(self, start=0):
+        self.counter = start - 1
+        super().__init__(self.count)
+
+    def count(self):
+        self.counter += 1
+        return self.counter
+
+    @classmethod
+    def from_dict(cls, the_dict):
+        result = cls()
+        result.update(the_dict)
+        result.counter = max(the_dict.values())
+        return result
+
+    @property
+    def names(self):
+        inv_dict = {v: k for k, v in self.items()}
+        return [inv_dict[i] for i in range(len(self))]

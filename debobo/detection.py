@@ -6,7 +6,7 @@ import numpy as np
 from typing import (Callable, DefaultDict, Dict, Hashable, Iterable, List,
                     Optional, Tuple)
 
-from .utils import bounding_box_iou, cast_recarray
+from .utils import bounding_box_iou, cast_recarray, UniqueLabeler
 
 __all__ = ['match_detections', 'merge_rank_arrays', 'evaluate_frames']
 
@@ -97,13 +97,27 @@ def match_detections(
     Returns (Dict[str, _ClassificationEvaluation]): multi-class classifcation
         evaluation results.
     """
-    gt = cast_recarray(gt, dtype=BBOX_DTYPE + [('class', np.int_)])
-    dt = cast_recarray(dt, dtype=BBOX_DTYPE + [('class', np.int_), ('score', np.float_)])
+    class_lookup = None
+    try:
+        gt = cast_recarray(gt, dtype=BBOX_DTYPE + [('class', np.int_)])
+        dt = cast_recarray(dt, dtype=BBOX_DTYPE + [('class', np.int_), ('score', np.float_)])
+    except ValueError:
+        # Passed in class name instead of ID
+        labeller = UniqueLabeler()
+        gt = cast_recarray([(*bbox, labeller[cid]) for *bbox, cid in gt],
+                           dtype=BBOX_DTYPE + [('class', np.int_)])
+        dt = cast_recarray([(*bbox, labeller[cid], conf) for *bbox, cid, conf in dt],
+                           dtype=BBOX_DTYPE + [('class', np.int_), ('score', np.float_)])
+        class_lookup = labeller.names
 
     result = dict()
     for c in set(gt['class']).union(dt['class']):
         gt_c = gt[gt['class'] == c][['x1', 'y1', 'x2', 'y2']]
         dt_c = dt[dt['class'] == c][['x1', 'y1', 'x2', 'y2', 'score']]
+
+        if class_lookup is not None:
+            c = class_lookup[c]
+
         result[c] = match_single_class(gt_c, dt_c, iou_thresh=iou_thresh)
 
     return result

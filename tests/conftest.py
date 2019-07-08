@@ -56,8 +56,8 @@ def to_dataframe(records):
     return df
 
 
-@pytest.fixture(scope='session')
-def detection_data(datadir, request):
+@pytest.fixture(params=[False, True])
+def detection_data(datadir, coco_names, request):
     result = request.config.cache.get('detection_data', None)
     if result is None:
         result = load_json_detection_data(datadir)
@@ -66,7 +66,18 @@ def detection_data(datadir, request):
     Data = namedtuple('Data', 'gt, dt')
     groundtruth = to_dataframe(result['groundtruth'])
     detection = to_dataframe(result['detection'])
+
+    if request.param:
+        groundtruth['class'] = groundtruth['class'].map(coco_names.__getitem__)
+        detection['class'] = detection['class'].map(coco_names.__getitem__)
+
     return Data(groundtruth, detection)
+
+
+@pytest.fixture(scope='session')
+def coco_names(datadir):
+    with open(datadir / 'coco.names') as buf:
+        return buf.read().split('\n')
 
 
 @pytest.fixture(scope='session')
