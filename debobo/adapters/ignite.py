@@ -5,15 +5,25 @@ from debobo import (interpolated_average_precision_score, match_detections,
 from ignite.metrics import Metric
 
 
+class FakeClassNames:
+
+    def __getitem__(self, idx):
+        return idx
+
+
+
+
 class APScores(Metric):
 
     def __init__(self, iou_thresh=0.5, max_detections=None,
-                 ap_fun=interpolated_average_precision_score):
+                 ap_fun=interpolated_average_precision_score,
+                 class_names=None):
         super().__init__()
         self.rank_arrays = []
         self.iou_thresh = iou_thresh
         self.ap_fun = ap_fun
         self.max_detections = max_detections
+        self.class_names = class_names if class_names is not None else FakeClassNames()
 
     def reset(self):
         self.rank_arrays = []
@@ -28,7 +38,8 @@ class APScores(Metric):
 
     def compute(self):
         rank_arrays = merge_rank_arrays(self.rank_arrays)
-        return {key: self.ap_fun(val['gt'], val['dt']) for key, val in rank_arrays.items()}
+        return {self.class_names[key]: self.ap_fun(val['gt'], val['dt'])
+                for key, val in rank_arrays.items()}
 
 
 
