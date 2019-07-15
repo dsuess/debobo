@@ -1,8 +1,15 @@
 import numpy as np
 import torch
+from ignite.metrics import Metric
+
 from debobo import (interpolated_average_precision_score, match_detections,
                     merge_rank_arrays)
-from ignite.metrics import Metric
+from debobo.retrieval import precision_recall_curve
+
+try:
+    from debobo import visualize
+except ImportError:
+    pass
 
 
 class FakeClassNames:
@@ -11,19 +18,15 @@ class FakeClassNames:
         return idx
 
 
-
-
-class APScores(Metric):
+class _DeboboMetric(Metric):
 
     def __init__(self, iou_thresh=0.5, max_detections=None,
-                 ap_fun=interpolated_average_precision_score,
-                 class_names=None):
+                 ap_fun=interpolated_average_precision_score):
         super().__init__()
         self.rank_arrays = []
         self.iou_thresh = iou_thresh
-        self.ap_fun = ap_fun
         self.max_detections = max_detections
-        self.class_names = class_names if class_names is not None else FakeClassNames()
+        self.ap_fun = ap_fun
 
     def reset(self):
         self.rank_arrays = []
@@ -36,11 +39,16 @@ class APScores(Metric):
                                            iou_thresh=self.iou_thresh)
             self.rank_arrays.append(rank_arrays)
 
+
+class APScores(_DeboboMetric):
+    def __init__(self, *args, class_names=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.class_names = class_names if class_names is not None else FakeClassNames()
+
     def compute(self):
         rank_arrays = merge_rank_arrays(self.rank_arrays)
         return {self.class_names[key]: self.ap_fun(val['gt'], val['dt'])
                 for key, val in rank_arrays.items()}
-
 
 
 class MAPScore(APScores):
@@ -53,8 +61,16 @@ class MAPScore(APScores):
         if self.weighted:
             rank_arrays = merge_rank_arrays(self.rank_arrays)
             rank_arrays = np.concatenate(list(rank_arrays.values()))
-            return ap_fun(rank_arrays['gt'], rank_arrays['dt'])
+            return self.ap_fun(rank_arrays['gt'], rank_arrays['dt'])
 
         else:
             scores = np.array(list(super().compute().values()))
             return np.mean(scores[~np.isnan(scores)])
+
+
+class PRCurve(_DeboboMetric):
+
+    def compute(self):
+        rank_arrays = merge_rank_arrays(self.rank_arrays)
+        rank_arrays = np.concatenate(list(rank_arrays.values()))
+        return precision_recall_curve(rank_arrays['gt'], rank_arrays['dt'])

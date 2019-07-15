@@ -3,7 +3,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 import torch
-from debobo.adapters.ignite import MAPScore, APScores
+from debobo.adapters.ignite import MAPScore, APScores, PRCurve
 from debobo.utils import iterbatch
 
 
@@ -71,3 +71,29 @@ def test_ap_score_evaluator_with_class_names(
         assert set(scores).issubset(class_names)
     else:
         assert set(scores).issubset(range(91))
+
+
+def test_pr_curve(detection_data, coco_results):
+    # FIXME Dont skip this test for named classes
+    if not np.issubdtype(detection_data.gt['class'].dtype, np.number):
+        pytest.skip('Skipping testing ignite adapter for non-numeric data')
+
+    image_ids = list(set(detection_data.dt['image_id']).union(detection_data.gt['image_id']))
+    groundtruths = (
+        detection_data.gt.loc[detection_data.gt['image_id'] == image_id,
+                              ['x1', 'y1', 'x2', 'y2', 'class']].values
+        for image_id in image_ids)
+    detections = (
+        detection_data.dt.loc[detection_data.dt['image_id'] == image_id,
+                              ['x1', 'y1', 'x2', 'y2', 'class', 'score']].values
+        for image_id in image_ids)
+
+    metric = PRCurve(iou_thresh=0.5, max_detections=100)
+    for gt, dt in zip(iterbatch(groundtruths, 1), iterbatch(detections, 1)):
+        gt, dt = list(gt), list(dt)
+        gt = list(map(safe_to_torch, gt))
+        dt = list(map(safe_to_torch, dt))
+        metric.update((dt, gt))
+
+    p, r = metric.compute()
+    assert len(p) == len(r)
