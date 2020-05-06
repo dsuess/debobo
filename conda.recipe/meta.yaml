@@ -15,14 +15,10 @@ build:
   noarch: python
 
 requirements:
-  host:
-    - numpy >=1.12
-    - pip
-    - python
   build:
-    - python {{ python }}
+    - python
   run:
-    - numpy >=1.12
+    - numpy>=1.12
     - python
 
 test:
