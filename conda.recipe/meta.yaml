@@ -1,0 +1,46 @@
+{% set name = "debobo" %}
+{% set data = load_setup_py_data() %}
+
+
+package:
+  name: "{{ name|lower }}"
+  version: "{{ data['version'] }}"
+
+source:
+  path: ..
+
+build:
+  number: 0
+  script: "{{ PYTHON }} -m pip install . -vv"
+  noarch: python
+
+requirements:
+  host:
+    - numpy >=1.12
+    - pip
+    - python
+  build:
+    - python {{ python }}
+  run:
+    - numpy >=1.12
+    - python
+
+test:
+  imports:
+    - debobo
+    - debobo.adapters
+  requires:
+    - ignite
+    - pycocotools
+    - pytest
+
+about:
+  home: "https://github.com/dseuss/debobo.git"
+  license: "GNU Lesser General Public v3 (LGPLv3)"
+  license_family: LGPL
+  license_file:
+  summary: "Package for evaluating object detection models"
+
+extra:
+  recipe-maintainers:
+    - dsuess
